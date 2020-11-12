@@ -8902,6 +8902,26 @@ static int dm_update_plane_state(struct dc *dc,
 			return -EINVAL;
 		}
 
+		if (new_plane_state->fb) {
+			if (new_plane_state->fb->pitches[0] > new_acrtc->max_cursor_width) {
+				DRM_DEBUG_ATOMIC("Cursor pitch %d too large\n",
+						 new_plane_state->fb->pitches[0]);
+				return -EINVAL;
+			}
+
+			switch (new_plane_state->fb->pitches[0]) {
+			case 64:
+			case 128:
+			case 256:
+				/* Pitch is supported by cursor plane */
+				break;
+			default:
+				DRM_DEBUG_ATOMIC("Bad cursor pitch %d\n",
+						 new_plane_state->fb->pitches[0]);
+				return -EINVAL;
+			}
+		}
+
 		return 0;
 	}
 

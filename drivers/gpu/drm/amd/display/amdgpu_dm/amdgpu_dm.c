@@ -8922,6 +8922,11 @@ static int dm_update_plane_state(struct dc *dc,
 			}
 		}
 
+		if (new_plane_state->src_x != 0 || new_plane_state->src_y != 0) {
+			DRM_DEBUG_ATOMIC("Cropping not supported for cursor plane\n");
+			return -EINVAL;
+		}
+
 		return 0;
 	}
 

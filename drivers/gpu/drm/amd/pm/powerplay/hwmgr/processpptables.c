@@ -1006,6 +1006,9 @@ static int init_thermal_controller(
 
 	hwmgr->thermal_controller.use_hw_fan_control = 1;
 
+	phm_cap_set(hwmgr->platform_descriptor.platformCaps,
+		    PHM_PlatformCaps_MicrocodeFanControl);
+
 	return 0;
 }
 

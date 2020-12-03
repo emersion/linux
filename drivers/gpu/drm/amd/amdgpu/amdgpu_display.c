@@ -679,7 +679,11 @@ static int convert_tiling_flags_to_modifier(struct amdgpu_framebuffer *afb)
 	struct amdgpu_device *adev = drm_to_adev(afb->base.dev);
 	uint64_t modifier = 0;
 
-	if (!afb->tiling_flags || !AMDGPU_TILING_GET(afb->tiling_flags, SWIZZLE_MODE)) {
+	if (!AMDGPU_TILING_GET(afb->tiling_flags, SCANOUT)) {
+		return -EINVAL;
+	}
+
+	if (!AMDGPU_TILING_GET(afb->tiling_flags, SWIZZLE_MODE)) {
 		modifier = DRM_FORMAT_MOD_LINEAR;
 	} else {
 		int swizzle = AMDGPU_TILING_GET(afb->tiling_flags, SWIZZLE_MODE);

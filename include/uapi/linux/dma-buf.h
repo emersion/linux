@@ -114,6 +114,9 @@ struct dma_buf_sync {
  * ordering via these fences, it is the respnosibility of userspace to use
  * locks or other mechanisms to ensure that no other context adds fences or
  * submits work between steps 1 and 3 above.
+ *
+ * Userspace can check the availability of this API via
+ * /sys/kernel/dmabuf/caps/sync_file_import_export.
  */
 struct dma_buf_export_sync_file {
 	/**
@@ -146,6 +149,9 @@ struct dma_buf_export_sync_file {
  * synchronized APIs such as Vulkan to inter-op with dma-buf consumers
  * which expect implicit synchronization such as OpenGL or most media
  * drivers/video.
+ *
+ * Userspace can check the availability of this API via
+ * /sys/kernel/dmabuf/caps/sync_file_import_export.
  */
 struct dma_buf_import_sync_file {
 	/**

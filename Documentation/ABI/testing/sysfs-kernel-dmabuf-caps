@@ -1,0 +1,13 @@
+What:		/sys/kernel/dmabuf/caps
+Date:		May 2022
+KernelVersion:	v5.20
+Contact:	Simon Ser <contact@emersion.fr>
+Description:	This directory advertises DMA-BUF capabilities supported by the
+		kernel.
+
+What:		/sys/kernel/dmabuf/caps/sync_file_import_export
+Date:		May 2022
+KernelVersion:	v5.20
+Contact:	Simon Ser <contact@emersion.fr>
+Description:	This file is read-only and advertises support for importing and
+		exporting sync_files from/to DMA-BUFs.

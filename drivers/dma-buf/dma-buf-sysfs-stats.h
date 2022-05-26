@@ -8,9 +8,11 @@
 #ifndef _DMA_BUF_SYSFS_STATS_H
 #define _DMA_BUF_SYSFS_STATS_H
 
+struct kset;
+
 #ifdef CONFIG_DMABUF_SYSFS_STATS
 
-int dma_buf_init_sysfs_statistics(void);
+int dma_buf_init_sysfs_statistics(struct kset *kset);
 void dma_buf_uninit_sysfs_statistics(void);
 
 int dma_buf_stats_setup(struct dma_buf *dmabuf);
@@ -18,7 +20,7 @@ int dma_buf_stats_setup(struct dma_buf *dmabuf);
 void dma_buf_stats_teardown(struct dma_buf *dmabuf);
 #else
 
-static inline int dma_buf_init_sysfs_statistics(void)
+static inline int dma_buf_init_sysfs_statistics(struct kset *kset)
 {
 	return 0;
 }

@@ -30,6 +30,7 @@
 #include <uapi/linux/dma-buf.h>
 #include <uapi/linux/magic.h>
 
+#include "dma-buf-sysfs-caps.h"
 #include "dma-buf-sysfs-stats.h"
 
 static inline int is_dma_buf_file(struct file *);
@@ -1546,22 +1547,57 @@ static inline void dma_buf_uninit_debugfs(void)
 }
 #endif
 
+/* Capabilities and statistics files do not need to send uevents. */
+static int dmabuf_sysfs_uevent_filter(struct kobject *kobj)
+{
+	return 0;
+}
+
+static const struct kset_uevent_ops dmabuf_sysfs_no_uevent_ops = {
+	.filter = dmabuf_sysfs_uevent_filter,
+};
+
+static const struct attribute_group *dma_buf_sysfs_groups[] = {
+	&dma_buf_caps_group,
+	NULL,
+};
+
+static struct kset *dma_buf_kset;
+
 static int __init dma_buf_init(void)
 {
 	int ret;
 
-	ret = dma_buf_init_sysfs_statistics();
+	dma_buf_kset = kset_create_and_add("dmabuf",
+					   &dmabuf_sysfs_no_uevent_ops,
+					   kernel_kobj);
+	if (!dma_buf_kset)
+		return -ENOMEM;
+
+	ret = sysfs_create_groups(&dma_buf_kset->kobj, dma_buf_sysfs_groups);
 	if (ret)
-		return ret;
+		goto err_kset;
+
+	ret = dma_buf_init_sysfs_statistics(dma_buf_kset);
+	if (ret)
+		goto err_kset;
 
 	dma_buf_mnt = kern_mount(&dma_buf_fs_type);
-	if (IS_ERR(dma_buf_mnt))
-		return PTR_ERR(dma_buf_mnt);
+	if (IS_ERR(dma_buf_mnt)) {
+		ret = PTR_ERR(dma_buf_mnt);
+		goto err_sysfs_stats;
+	}
 
 	mutex_init(&db_list.lock);
 	INIT_LIST_HEAD(&db_list.head);
 	dma_buf_init_debugfs();
 	return 0;
+
+err_sysfs_stats:
+	dma_buf_uninit_sysfs_statistics();
+err_kset:
+	kset_unregister(dma_buf_kset);
+	return ret;
 }
 subsys_initcall(dma_buf_init);
 
@@ -1570,5 +1606,6 @@ static void __exit dma_buf_deinit(void)
 	dma_buf_uninit_debugfs();
 	kern_unmount(dma_buf_mnt);
 	dma_buf_uninit_sysfs_statistics();
+	kset_unregister(dma_buf_kset);
 }
 __exitcall(dma_buf_deinit);

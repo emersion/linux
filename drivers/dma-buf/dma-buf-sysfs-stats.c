@@ -141,23 +141,14 @@ static const struct kset_uevent_ops dmabuf_sysfs_no_uevent_ops = {
 	.filter = dmabuf_sysfs_uevent_filter,
 };
 
-static struct kset *dma_buf_stats_kset;
 static struct kset *dma_buf_per_buffer_stats_kset;
-int dma_buf_init_sysfs_statistics(void)
+int dma_buf_init_sysfs_statistics(struct kset *kset)
 {
-	dma_buf_stats_kset = kset_create_and_add("dmabuf",
-						 &dmabuf_sysfs_no_uevent_ops,
-						 kernel_kobj);
-	if (!dma_buf_stats_kset)
-		return -ENOMEM;
-
 	dma_buf_per_buffer_stats_kset = kset_create_and_add("buffers",
 							    &dmabuf_sysfs_no_uevent_ops,
-							    &dma_buf_stats_kset->kobj);
-	if (!dma_buf_per_buffer_stats_kset) {
-		kset_unregister(dma_buf_stats_kset);
+							    &kset->kobj);
+	if (!dma_buf_per_buffer_stats_kset)
 		return -ENOMEM;
-	}
 
 	return 0;
 }
@@ -165,7 +156,6 @@ int dma_buf_init_sysfs_statistics(void)
 void dma_buf_uninit_sysfs_statistics(void)
 {
 	kset_unregister(dma_buf_per_buffer_stats_kset);
-	kset_unregister(dma_buf_stats_kset);
 }
 
 int dma_buf_stats_setup(struct dma_buf *dmabuf)

@@ -950,6 +950,8 @@ struct hdr_output_metadata {
  * delay due to waiting for vblank. This may cause tearing to be visible on
  * the screen.
  *
+ * When used with atomic uAPI, only a plane's FB_ID property can be updated.
+ *
  * When used with atomic uAPI, the driver will return an error if the hardware
  * doesn't support performing an asynchronous page-flip for this update.
  * User-space should handle this, e.g. by falling back to a regular page-flip.

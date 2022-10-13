@@ -972,13 +972,25 @@ int drm_atomic_set_property(struct drm_atomic_state *state,
 			    struct drm_file *file_priv,
 			    struct drm_mode_object *obj,
 			    struct drm_property *prop,
-			    uint64_t prop_value)
+			    uint64_t prop_value,
+			    bool async_flip)
 {
 	struct drm_mode_object *ref;
 	int ret;
+	uint64_t old_val;
 
 	if (!drm_property_change_valid_get(prop, prop_value, &ref))
 		return -EINVAL;
+
+	if (async_flip && prop != prop->dev->mode_config.prop_fb_id) {
+		ret = drm_atomic_get_property(obj, prop, &old_val);
+		if (ret != 0 || old_val != prop_value) {
+			drm_dbg_atomic(prop->dev,
+				       "[PROP:%d:%s] cannot be changed during async flip\n",
+				       prop->base.id, prop->name);
+			return -EINVAL;
+		}
+	}
 
 	switch (obj->type) {
 	case DRM_MODE_OBJECT_CONNECTOR: {
@@ -1424,7 +1436,8 @@ retry:
 			}
 
 			ret = drm_atomic_set_property(state, file_priv,
-						      obj, prop, prop_value);
+						      obj, prop, prop_value,
+						      arg->flags & DRM_MODE_PAGE_FLIP_ASYNC);
 			if (ret) {
 				drm_mode_object_put(obj);
 				goto out;

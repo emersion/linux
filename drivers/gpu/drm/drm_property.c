@@ -474,7 +474,14 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 		return -ENOENT;
 
 	strscpy_pad(out_resp->name, property->name, DRM_PROP_NAME_LEN);
+
 	out_resp->flags = property->flags;
+	if (file_priv->atomic && property == dev->mode_config.dpms_property) {
+		/* Quirk: indicate that the legacy DPMS property is not
+		 * writable from atomic user-space, so that blind atomic
+		 * save/restore works as intended. */
+		out_resp->flags |= DRM_MODE_PROP_IMMUTABLE;
+	}
 
 	value_count = property->num_values;
 	values_ptr = u64_to_user_ptr(out_resp->values_ptr);

@@ -741,8 +741,9 @@ static int drm_atomic_connector_set_property(struct drm_connector *connector,
 		state->scaling_mode = val;
 	} else if (property == config->content_protection_property) {
 		if (val == DRM_MODE_CONTENT_PROTECTION_ENABLED) {
-			drm_dbg_kms(dev, "only drivers can set CP Enabled\n");
-			return -EINVAL;
+			/* Degrade ENABLED to DESIRED so that blind atomic
+			 * save/restore works as intended. */
+			val = DRM_MODE_CONTENT_PROTECTION_DESIRED;
 		}
 		state->content_protection = val;
 	} else if (property == config->hdcp_content_type_property) {
